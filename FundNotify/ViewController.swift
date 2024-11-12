@@ -9,7 +9,8 @@ import UIKit
 
 class ViewController: UIViewController {
     var fundData: FundData?
-    @IBOutlet weak var datePicker: UIDatePicker!
+    @IBOutlet weak var notifyDate: UIDatePicker!
+    @IBOutlet weak var fundNameLabel: UILabel!
     @IBOutlet weak var navLabel: UILabel!
     @IBOutlet weak var cmpPrevDayLabel: UILabel!
     
@@ -57,7 +58,7 @@ class ViewController: UIViewController {
     }
     
     @IBAction func scheduleNotification(_ sender: UIDatePicker) {
-        let notificationTime = datePicker.date
+        let notificationTime = notifyDate.date
         let notificationManager = NotificationManager()
         notificationManager.scheduleDailyNotification(at: notificationTime)
     }
@@ -66,6 +67,7 @@ class ViewController: UIViewController {
         guard let fundData = fundData else { return }
         
         // 例: ラベルの更新
+        fundNameLabel.text = "ファンド名: \(fundData.fundName)"
         navLabel.text = "基準価額: \(fundData.nav)"
         cmpPrevDayLabel.text = "前日比: \(fundData.cmpPrevDay)"
     }

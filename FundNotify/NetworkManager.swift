@@ -30,7 +30,9 @@ class NetworkManager {
                 
                 // データが存在すれば成功を返す
                 if let fund = response.datasets.first {
-                    let fundData = FundData(nav: fund.nav, cmpPrevDay: Int(fund.cmp_prev_day) ?? 0)
+                    let fundData = FundData(fundName: fund.fund_name,
+                                            nav: fund.nav,
+                                            cmpPrevDay: Int(fund.cmp_prev_day) ?? 0)
                     completion(.success(fundData))
                 } else {
                     let error = NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "No fund data found"])

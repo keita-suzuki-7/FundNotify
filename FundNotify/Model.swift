@@ -13,12 +13,14 @@ struct FundResponse: Codable {
 
 // ファンドのデータモデル
 struct Fund: Codable {
+    let fund_name: String
     let nav: Int
     let cmp_prev_day: String
 }
 
 // UIに表示するためのデータモデル
 struct FundData {
+    let fundName: String
     let nav: Int
     let cmpPrevDay: Int
 }
