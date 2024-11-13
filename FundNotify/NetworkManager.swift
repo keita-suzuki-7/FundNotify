@@ -26,13 +26,13 @@ class NetworkManager {
             do {
                 // JSONデータをデコード
                 let decoder = JSONDecoder()
+                // to camel case
+                decoder.keyDecodingStrategy = .convertFromSnakeCase
                 let response = try decoder.decode(FundResponse.self, from: data)
                 
                 // データが存在すれば成功を返す
                 if let fund = response.datasets.first {
-                    let fundData = FundData(fundName: fund.fund_name,
-                                            nav: fund.nav,
-                                            cmpPrevDay: Int(fund.cmp_prev_day) ?? 0)
+                    let fundData = fund
                     completion(.success(fundData))
                 } else {
                     let error = NSError(domain: "", code: 0, userInfo: [NSLocalizedDescriptionKey: "No fund data found"])

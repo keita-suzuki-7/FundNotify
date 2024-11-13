@@ -8,67 +8,76 @@
 import UIKit
 
 class ViewController: UIViewController {
+    
     var fundData: FundData?
-    @IBOutlet weak var notifyDate: UIDatePicker!
+    var networkManager: NetworkManager!
+    var notificationManager: NotificationManager!
+    
+    @IBOutlet weak var notifyTime: UIDatePicker!
     @IBOutlet weak var fundNameLabel: UILabel!
     @IBOutlet weak var navLabel: UILabel!
     @IBOutlet weak var cmpPrevDayLabel: UILabel!
+    @IBOutlet weak var supplementLabel: UILabel!
+    
+    @IBOutlet weak var updateButton: UIButton!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        // キーボード表示・非表示の通知を監視
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_:)), name: UIResponder.keyboardWillShowNotification, object: nil)
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: UIResponder.keyboardWillHideNotification, object: nil)
-        
+        setupManagers()
         fetchFundData()
-        updateUI()
-        
-    }
-    
-    // キーボードが表示される前に呼ばれる
-    @objc func keyboardWillShow(_ notification: Notification) {
-        print("キーボードが表示されます")
-        // 必要に応じて、ビューのレイアウトやスクロールビューの調整などを行う
-    }
-    
-    // キーボードが非表示になる前に呼ばれる
-    @objc func keyboardWillHide(_ notification: Notification) {
-        print("キーボードが非表示になります")
-        // 必要に応じてビューを元の状態に戻す
     }
     
     deinit {
         // メモリリークを防ぐため、通知の監視を解除
         NotificationCenter.default.removeObserver(self)
     }
+    
+    private func setupManagers() {
+        networkManager = NetworkManager()
+        notificationManager = NotificationManager()
+    }
 
-    func fetchFundData() {
-        let networkManager = NetworkManager()
-        networkManager.fetchFundData { result in
+    private func fetchFundData() {
+        networkManager.fetchFundData { [weak self] result in
+            guard let self = self else { return }
+            
             switch result {
             case .success(let data):
                 self.fundData = data
-                DispatchQueue.main.async {
-                    self.updateUI()
-                }
+                self.updateUI()
             case .failure(let error):
-                print("Error fetching data: \(error)")
+                self.handleError(error)
             }
         }
     }
     
-    @IBAction func scheduleNotification(_ sender: UIDatePicker) {
-        let notificationTime = notifyDate.date
-        let notificationManager = NotificationManager()
-        notificationManager.scheduleDailyNotification(at: notificationTime)
+    @IBAction func scheduleDailyNotification(_ sender: UIDatePicker) {
+        guard let fundData = fundData else {
+            print("Fund data is not available.")
+            return
+        }
+        notificationManager.scheduleDailyNotification(at: sender.date, fundData: fundData)
     }
 
-    func updateUI() {
+    private func updateUI() {
         guard let fundData = fundData else { return }
         
-        // 例: ラベルの更新
+        fundNameLabel.numberOfLines = 0
         fundNameLabel.text = "ファンド名: \(fundData.fundName)"
-        navLabel.text = "基準価額: \(fundData.nav)"
-        cmpPrevDayLabel.text = "前日比: \(fundData.cmpPrevDay)"
+        navLabel.text = "基準価額: \(fundData.nav)円"
+        cmpPrevDayLabel.text = "前日比: \(fundData.cmpPrevDay)円 (\(fundData.percentageChange)%)"
+        
+        supplementLabel.lineBreakMode = .byWordWrapping
+        supplementLabel.numberOfLines = 0
+        supplementLabel.text = "初回約定: 24,348円(2024/5/7)\n基準価額最高値[設定来]: \(fundData.navMaxFull)円"
+    }
+    
+    @IBAction func updateData(_ sender: UIButton) {
+        fetchFundData()
+    }
+    
+    private func handleError(_ error: Error) {
+        print("Error fetching data: \(error)")
+        // エラー表示やリトライ機能などを追加できます
     }
 }
