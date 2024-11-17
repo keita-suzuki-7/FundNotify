@@ -12,6 +12,7 @@ class ViewController: UIViewController {
     var fundData: FundData?
     var networkManager: NetworkManager!
     var notificationManager: NotificationManager!
+    var activityIndicator: UIActivityIndicatorView!
     
     @IBOutlet weak var notifyTime: UIDatePicker!
     @IBOutlet weak var fundNameLabel: UILabel!
@@ -24,6 +25,7 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setupManagers()
+        setupActivityIndicator()
         fetchFundData()
     }
     
@@ -36,9 +38,26 @@ class ViewController: UIViewController {
         networkManager = NetworkManager()
         notificationManager = NotificationManager()
     }
-
+    
+    // UIActivityIndicatorView のセットアップ
+    private func setupActivityIndicator() {
+        activityIndicator = UIActivityIndicatorView(style: .large)
+        activityIndicator.center = view.center
+        activityIndicator.hidesWhenStopped = true
+        view.addSubview(activityIndicator)
+    }
+    
     private func fetchFundData() {
+        // データ更新中にインジケーターを表示
+        activityIndicator.startAnimating()
+
         networkManager.fetchFundData { [weak self] result in
+            
+            // 非同期処理が完了したらメインスレッドでインジケーターを停止
+            DispatchQueue.main.async {
+                self?.activityIndicator.stopAnimating()
+            }
+            
             guard let self = self else { return }
             
             switch result {
@@ -63,14 +82,17 @@ class ViewController: UIViewController {
     private func updateUI() {
         guard let fundData = fundData else { return }
         
-        fundNameLabel.numberOfLines = 0
-        fundNameLabel.text = "ファンド名: \(fundData.fundName)"
-        navLabel.text = "基準価額: \(fundData.nav)円"
-        cmpPrevDayLabel.text = "前日比: \(fundData.cmpPrevDay)円 (\(fundData.percentageChange)%)"
-        
-        supplementLabel.lineBreakMode = .byWordWrapping
-        supplementLabel.numberOfLines = 0
-        supplementLabel.text = "初回約定: 24,348円(2024/5/7)\n基準価額最高値[設定来]: \(fundData.navMaxFull)円"
+        // メインスレッドでUI更新を行う
+        DispatchQueue.main.async {
+            self.fundNameLabel.numberOfLines = 0
+            self.fundNameLabel.text = "ファンド名: \(fundData.fundName)"
+            self.navLabel.text = "基準価額: \(fundData.nav)円"
+            self.cmpPrevDayLabel.text = "前日比: \(fundData.cmpPrevDay)円 (\(fundData.percentageChange)%)"
+            
+            self.supplementLabel.lineBreakMode = .byWordWrapping
+            self.supplementLabel.numberOfLines = 0
+            self.supplementLabel.text = "初回約定: 24,348円(2024/5/7)\n基準価額最高値[設定来]: \(fundData.navMaxFull)円"
+        }
     }
     
     @IBAction func updateData(_ sender: UIButton) {
