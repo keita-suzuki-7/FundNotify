@@ -52,6 +52,7 @@ class ViewController: UIViewController {
     }
     
     @IBAction func scheduleDailyNotification(_ sender: UIDatePicker) {
+        fetchFundData()
         guard let fundData = fundData else {
             print("Fund data is not available.")
             return

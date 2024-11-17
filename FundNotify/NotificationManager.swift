@@ -12,7 +12,7 @@ class NotificationManager {
     func scheduleDailyNotification(at notifyTime: Date, fundData: FundData) {
         let content = UNMutableNotificationContent()
         content.title = "\(fundData.fundName)"
-        content.body = "基準日: \(fundData.baseDate) 基準価額: \(fundData.nav) 前日比: \(fundData.cmpPrevDay)"
+        content.body = "基準日: \(fundData.baseDate) 基準価額: \(fundData.nav)円\n前日比: \(fundData.cmpPrevDay)円(\(fundData.percentageChange)%) 基準価額最高値[設定来]: \(fundData.navMaxFull)円"
         
         // 時刻のみを指定して毎日同じ時刻に通知する
         var dateComponents = DateComponents()
