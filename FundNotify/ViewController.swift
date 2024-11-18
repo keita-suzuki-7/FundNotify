@@ -24,6 +24,13 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        AuthenticationManager.authenticate { success, errorMessage in
+            if success {
+                print("Authentication successful!")
+            } else {
+                print("Authentication failed: \(errorMessage ?? "Unknown error")")
+            }
+        }
         setupManagers()
         setupActivityIndicator()
         fetchFundData()
