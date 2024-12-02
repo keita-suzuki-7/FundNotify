@@ -24,6 +24,27 @@ class ViewController: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // 背景色の設定
+        view.backgroundColor = UIColor.systemBackground
+
+        // ラベルのデザイン
+        fundNameLabel.font = UIFont.systemFont(ofSize: 22, weight: .semibold)
+        fundNameLabel.textColor = UIColor.label
+
+        navLabel.font = UIFont.systemFont(ofSize: 18, weight: .regular)
+        navLabel.textColor = UIColor.label
+
+        cmpPrevDayLabel.font = UIFont.systemFont(ofSize: 18, weight: .regular)
+        cmpPrevDayLabel.textColor = UIColor.label
+
+        // ボタンのデザイン
+        updateButton.backgroundColor = UIColor.systemBlue
+        updateButton.tintColor = UIColor.white
+        updateButton.setTitleColor(.white, for: .normal)
+        updateButton.titleLabel?.font = UIFont.boldSystemFont(ofSize: 17)
+        updateButton.layer.cornerRadius = 8
+        
         AuthenticationManager.authenticate { success, errorMessage in
             if success {
                 print("Authentication successful!")
