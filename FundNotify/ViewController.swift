@@ -36,7 +36,7 @@ class ViewController: UIViewController {
         navLabel.textColor = UIColor.label
 
         cmpPrevDayLabel.font = UIFont.systemFont(ofSize: 18, weight: .regular)
-        cmpPrevDayLabel.textColor = UIColor.label
+        cmpPrevDayLabel.textColor = UIColor.secondaryLabel
 
         // ボタンのデザイン
         updateButton.backgroundColor = UIColor.systemBlue
@@ -54,7 +54,13 @@ class ViewController: UIViewController {
         }
         setupManagers()
         setupActivityIndicator()
-        fetchFundData()
+        fetchFundData { success in
+            if success {
+                print("Fund data updated successfully.")
+            } else {
+                print("Failed to update fund data.")
+            }
+        }
     }
     
     deinit {
@@ -75,36 +81,43 @@ class ViewController: UIViewController {
         view.addSubview(activityIndicator)
     }
     
-    private func fetchFundData() {
+    private func fetchFundData(completion: @escaping (Bool) -> Void) {
         // データ更新中にインジケーターを表示
         activityIndicator.startAnimating()
 
         networkManager.fetchFundData { [weak self] result in
-            
-            // 非同期処理が完了したらメインスレッドでインジケーターを停止
             DispatchQueue.main.async {
                 self?.activityIndicator.stopAnimating()
             }
-            
-            guard let self = self else { return }
-            
+
+            guard let self = self else {
+                completion(false)
+                return
+            }
+
             switch result {
             case .success(let data):
                 self.fundData = data
                 self.updateUI()
+                completion(true)
             case .failure(let error):
                 self.handleError(error)
+                completion(false)
             }
         }
     }
     
     @IBAction func scheduleDailyNotification(_ sender: UIDatePicker) {
-        fetchFundData()
-        guard let fundData = fundData else {
-            print("Fund data is not available.")
-            return
+        // データ取得後に通知をスケジュールする
+        fetchFundData { [weak self] success in
+            guard let self = self else { return }
+            
+            if success, let fundData = self.fundData {
+                self.notificationManager.scheduleDailyNotification(at: sender.date, fundData: fundData)
+            } else {
+                print("Failed to fetch fund data or fund data is not available.")
+            }
         }
-        notificationManager.scheduleDailyNotification(at: sender.date, fundData: fundData)
     }
 
     private func updateUI() {
@@ -124,7 +137,13 @@ class ViewController: UIViewController {
     }
     
     @IBAction func updateData(_ sender: UIButton) {
-        fetchFundData()
+        fetchFundData { success in
+            if success {
+                print("Fund data updated successfully.")
+            } else {
+                print("Failed to update fund data.")
+            }
+        }
     }
     
     private func handleError(_ error: Error) {
