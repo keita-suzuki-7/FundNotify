@@ -7,6 +7,7 @@
 
 import UIKit
 import UserNotifications
+import BackgroundTasks
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -48,9 +49,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?) -> Bool {
         // 通知の許可をリクエスト
         requestNotificationPermission()
+        // バックグラウンドタスクの登録
+        BGTaskScheduler.shared.register(forTaskWithIdentifier: "fundnotify.app.refresh", using: nil) { task in
+            // タスクを処理
+            self.handleAppRefresh(task: task as! BGAppRefreshTask)
+        }
         return true
     }
-
+    
     // MARK: UISceneSession Lifecycle
 
     func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
@@ -60,4 +66,34 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     func application(_ application: UIApplication, didDiscardSceneSessions sceneSessions: Set<UISceneSession>) {
         // 不要なリソースの解放等を行います
     }
+    
+    private func handleAppRefresh(task: BGAppRefreshTask) {
+        // バックグラウンドタスクを処理
+        scheduleAppRefresh() // 次のタスクをスケジュール
+        task.expirationHandler = {
+            // タスクが期限切れの場合の処理
+        }
+        performBackgroundFetch { success in
+            task.setTaskCompleted(success: success)
+        }
+    }
+    
+    
+    private func performBackgroundFetch(completion: @escaping (Bool) -> Void) {
+        // データ取得処理を記述
+        DispatchQueue.global().asyncAfter(deadline: .now() + 2) {
+            completion(true) // サンプルでは常に成功を返す
+        }
+    }
+
+    private func scheduleAppRefresh() {
+        let request = BGAppRefreshTaskRequest(identifier: "fundnotify.app.refresh")
+        request.earliestBeginDate = Date(timeIntervalSinceNow: 15 * 60) // 15分後にスケジュール
+        do {
+            try BGTaskScheduler.shared.submit(request)
+        } catch {
+            print("バックグラウンドタスクのスケジュールに失敗: \(error)")
+        }
+    }
+    
 }
