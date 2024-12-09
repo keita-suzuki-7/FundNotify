@@ -6,6 +6,10 @@
 	<array>
 		<string>fundnotify.app.refresh</string>
 	</array>
+    <key>UIBackgroundModes</key>
+    <array>
+        <string>fetch</string>
+    </array>
 	<key>NSFaceIDUsageDescription</key>
 	<string>This app uses Face ID to provide secure access to your account.</string>
 	<key>UIApplicationSceneManifest</key>

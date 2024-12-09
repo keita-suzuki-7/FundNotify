@@ -88,7 +88,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     private func scheduleAppRefresh() {
         let request = BGAppRefreshTaskRequest(identifier: "fundnotify.app.refresh")
-        request.earliestBeginDate = Date(timeIntervalSinceNow: 15 * 60) // 15分後にスケジュール
+        request.earliestBeginDate = Date(timeIntervalSinceNow: 720 * 60) // 12時間後にスケジュール
         do {
             try BGTaskScheduler.shared.submit(request)
         } catch {

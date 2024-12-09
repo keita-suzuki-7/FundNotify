@@ -8,8 +8,12 @@ import UserNotifications
 import UIKit
 
 class NotificationManager {
+    
     // ユーザー設定の時間に毎日通知を送る関数
     func scheduleDailyNotification(at notifyTime: Date, fundData: FundData) {
+        // 既存の通知をキャンセル
+        UNUserNotificationCenter.current().removeAllPendingNotificationRequests()
+        
         let content = UNMutableNotificationContent()
         
         let cmpPrevDay = NumberFormatterUtil.formatSignedInt(fundData.cmpPrevDay)
