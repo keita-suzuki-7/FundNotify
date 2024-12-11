@@ -108,16 +108,8 @@ class ViewController: UIViewController {
     }
     
     @IBAction func scheduleDailyNotification(_ sender: UIDatePicker) {
-        // データ取得後に通知をスケジュールする
-        fetchFundData { [weak self] success in
-            guard let self = self else { return }
-            
-            if success, let fundData = self.fundData {
-                self.notificationManager.scheduleDailyNotification(at: sender.date, fundData: fundData)
-            } else {
-                print("Failed to fetch fund data or fund data is not available.")
-            }
-        }
+        // 通知をスケジュールする
+        self.notificationManager.scheduleDailyNotification(at: sender.date)
     }
 
     private func updateUI() {
