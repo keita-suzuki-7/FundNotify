@@ -52,8 +52,12 @@ class NotificationManager {
     }
     
     private func fetchAndUpdateNotification(request: UNNotificationRequest) {
-        // 最新のファンドデータを取得
+        let group = DispatchGroup()
+        group.enter()
+        
         networkManager.fetchFundData { [weak self] result in
+            defer { group.leave() }
+            
             switch result {
             case .success(let fundData):
                 let content = self?.generateContent(for: fundData) ?? UNMutableNotificationContent()
@@ -62,8 +66,6 @@ class NotificationManager {
                     content: content,
                     trigger: request.trigger
                 )
-                
-                // 通知リクエストを更新
                 UNUserNotificationCenter.current().add(updatedRequest) { error in
                     if let error = error {
                         print("Error updating notification: \(error)")
@@ -75,6 +77,8 @@ class NotificationManager {
                 print("Failed to fetch data for notification: \(error)")
             }
         }
+        
+        group.wait()
     }
     
     private func generatePlaceholderContent() -> UNMutableNotificationContent {
